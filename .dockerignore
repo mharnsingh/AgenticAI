@@ -1,0 +1,8 @@
+.env
+__pycache__/
+qdrant_data/
+poc_ai_agent.ipynb
+qa_tool/embeddings/
+qa_tool/poc_retriever.ipynb
+qa_tool/poc_qa_tool.ipynb
+summary_tool/poc_summary_tool.ipynb

@@ -1,0 +1,62 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    expose:
+      - "6333"
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agent_app
+    expose:
+      - "8000"
+    depends_on:
+      - qdrant
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - QDRANT_URL=http://qdrant:6333
+    volumes:
+      - ./qa_tool/embeddings:/app/embeddings 
+    networks:
+      - app-network
+    restart: unless-stopped
+  
+  streamlit:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile.streamlit
+    container_name: streamlit_app
+    expose:
+      - "8501"
+    depends_on:
+      - agent
+    environment:
+      - AGENT_API_URL=http://agent_app:8000/agent
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - agent
+      - streamlit
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
