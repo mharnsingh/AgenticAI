@@ -21,6 +21,7 @@ services:
       - qdrant
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
       - QDRANT_URL=http://qdrant:6333
     volumes:
       - ./qa_tool/embeddings:/app/embeddings 
@@ -38,7 +39,7 @@ services:
     depends_on:
       - agent
     environment:
-      - AGENT_API_URL=http://agent_app:8000/agent
+      - AGENT_API_URL=http://agent_app:8000/query
     networks:
       - app-network
     restart: unless-stopped

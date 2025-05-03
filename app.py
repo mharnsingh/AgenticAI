@@ -1,12 +1,9 @@
 from langchain_openai import ChatOpenAI
-from langchain.callbacks.tracers import LangChainTracer
-from langchain.callbacks.manager import CallbackManager
 from qa_tool.vectorstore import InitVectorStore
 from qa_tool.self_query_retreiver import InitSelfQueryRetreiver
 from qa_tool.qa_chain import InitQAChain
 from summary_tool.summary_chain import SummaryChainInit
 from ai_agent.agent import InitAgent
-from langsmith import traceable
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -15,17 +12,15 @@ import os
 
 
 load_dotenv()
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY", "")
+os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY", "")
 
-tracer = LangChainTracer()
-callback_manager = CallbackManager([tracer])
+os.environ["LANGSMITH_TRACING"] = "true"
+os.environ["LANGSMITH_ENDPOINT"] = "https://api.smith.langchain.com"
+os.environ["LANGSMITH_PROJECT"] = "ai-agent-demo"
 
-llm = ChatOpenAI(
-    model="gpt-4.1-mini", 
-    temperature=0.3, 
-    callback_manager=callback_manager,
-    verbose=True,
-)
+
+llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0.3, )
 
 print("Initializing vectorstore...")
 vectorstore = InitVectorStore(retrieval_mode="hybrid")
@@ -45,8 +40,7 @@ app = FastAPI()
 class AgentRequest(BaseModel):
     query: str
 
-@traceable(run_type="tool")
-@app.post("/agent")
+@app.post("/query")
 async def query_agent(request: AgentRequest):
     try:
         result = agent.invoke({"query": request.query})

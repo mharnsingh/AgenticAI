@@ -2,6 +2,7 @@ fastapi==0.115.12
 uvicorn==0.34.2
 pydantic==2.11
 torch==2.6.0
+langchain==0.3.25
 langchain-core==0.3.58
 langchain-community==0.3.23
 langchain-openai==0.3.16

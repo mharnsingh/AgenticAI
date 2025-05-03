@@ -3,7 +3,7 @@ import requests
 import os
 
 # Use the API URL from env variable or default to localhost
-api_url = os.getenv("AGENT_API_URL", "http://localhost:8000/agent")
+api_url = os.getenv("AGENT_API_URL", "http://localhost:8000/query")
 
 st.title("AI Agent Demo")
 
